@@ -1,0 +1,8 @@
+{
+    "bootSet":
+        [
+            {"item": 0, "label": "Ubuntu"},
+            {"item": 2, "label": "Windows"}
+        ],
+    "bootSelect": 1
+}
