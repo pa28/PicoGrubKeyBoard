@@ -15,9 +15,9 @@ def keyPress(keyCode):
     keyboard.press(keyCode)
     keyboard.release_all()
     
-    time.sleep(.1)
+    time.sleep(.05)
     led.value = False
-    time.sleep(.1)
+    time.sleep(.05)
     
 led = digitalio.DigitalInOut(board.GP25)
 led.direction = digitalio.Direction.OUTPUT
@@ -50,6 +50,10 @@ while True:
         time.sleep(5)
         led.value = False
         time.sleep(1)
+        
+        # Move to the top to undo GRUB default
+        for n in range(10):
+            keyPress(Keycode.UP_ARROW)
 
         # Select OS to boot
         for n in range(bootJson["bootSet"][bootJson["bootSelect"]]["item"]):
