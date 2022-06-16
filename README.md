@@ -5,7 +5,7 @@ A small Python script for Raspberry Pi Pico using CircuitPython and the ```adafr
 the Linux GRUB boot loader. This is uesful in my case because I'm using Logi Mx Keys Bluetooth connected keyboard which is not 
 active at that point in the boot sequence.
 
-This version uses a Pimoroni Pico Display for user interface and control.
+This version uses a [Pimoroni Pico Display](https://shop.pimoroni.com/products/pico-display-pack?variant=32368664215635) for user interface and control.
 
 ## Requirements
 
