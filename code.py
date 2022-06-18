@@ -22,10 +22,34 @@ from adafruit_hid.keyboard_layout_us import KeyboardLayoutUS
 from adafruit_hid.keycode import Keycode
 import adafruit_st7789
 
-#Configure HID devices
-mouse = Mouse(usb_hid.devices)
-keyboard = Keyboard(usb_hid.devices)
-keyboard_layout = KeyboardLayoutUS(keyboard)  # We're in the US :)
+
+led = digitalio.DigitalInOut(board.LED)
+led.direction = digitalio.Direction.OUTPUT
+led.value = False
+
+# Pin the Red LED is connected to
+RED_LED = board.GP6
+
+# Pin the Green LED is connected to
+GREEN_LED = board.GP7
+
+# Pin the Blue LED is connected to
+BLUE_LED = board.GP8
+
+# Create a RGB LED object
+rgbled = adafruit_rgbled.RGBLED(RED_LED, GREEN_LED, BLUE_LED, invert_pwm = True)
+rgbled.color = (0, 0, 0)
+
+def progressMark(color):
+    for n in range(3):
+        rgbled.color = color
+        time.sleep(0.1)
+        rgbled.color = (0, 0, 0)
+        time.sleep(0.1)
+
+def keyPress(state, keyCode):
+    state.keyboard.press(keyCode)
+    state.keyboard.release_all()
 
 def defineSwitch(switch_pin):
     pin = digitalio.DigitalInOut(switch_pin)
@@ -34,10 +58,6 @@ def defineSwitch(switch_pin):
     switch = Debouncer(pin)
     return switch
 
-def keyPress(keyCode):
-    keyboard.press(keyCode)
-    keyboard.release_all()
-    
 class State:
     def __init__(self):
         self.setBoot()
@@ -45,7 +65,18 @@ class State:
     def setBoot(self):
         self.state = 0
         self.delay = 0
+        self.hidConfig = False
+        self.mouse = 0
+        self.keyboard = 0
+        self.keyboard_layout = 0
     
+    def configHid(self):
+        if not self.hidConfig:
+            self.mouse = Mouse(usb_hid.devices)
+            self.keyboard = Keyboard(usb_hid.devices)
+            self.keyboard_layout = KeyboardLayoutUS(self.keyboard)  # We're in the US :)
+            self.hidConfig = True
+
     def isBoot(self):
         return self.state == 0
     
@@ -56,28 +87,30 @@ class State:
         return self.state == 1
     
     def setConnected(self):
+        self.configHid()
         self.state = 2
     
     def isConnected(self):
         return self.state == 2
     
     def setGrub(self):
+        self.configHid()
         self.state = 3
     
     def isGrub(self):
         return self.state == 3
     
-runState = State()
-if supervisor.runtime.usb_connected:
-    runState.setConnected()
-else:
-    runState.setNoHost()
-        
 print("==============================")
 print(os.uname())
 print("Hello Raspberry Pi Pico/CircuitPython ST7789 SPI IPS Display")
 print(adafruit_st7789.__name__ + " version: " + adafruit_st7789.__version__)
 print()
+
+runState = State()
+if supervisor.runtime.usb_connected:
+    runState.setConnected()
+else:
+    runState.setNoHost()
 
 # Read the boot configuration data
 bootStrm = open("/boot.json")
@@ -111,29 +144,13 @@ display = adafruit_st7789.ST7789(display_bus,
                     rowstart=40, colstart=53)
 display.rotation = 0
 
-led = digitalio.DigitalInOut(board.LED)
-led.direction = digitalio.Direction.OUTPUT
-led.value = False
-
-# Pin the Red LED is connected to
-RED_LED = board.GP6
-
-# Pin the Green LED is connected to
-GREEN_LED = board.GP7
-
-# Pin the Blue LED is connected to
-BLUE_LED = board.GP8
-
-# Create a RGB LED object
-rgbled = adafruit_rgbled.RGBLED(RED_LED, GREEN_LED, BLUE_LED, invert_pwm = True)
-rgbled.color = (0, 0, 0)
-
 SxA = defineSwitch(board.GP12)
 SxB = defineSwitch(board.GP13)
 SxX = defineSwitch(board.GP14)
 SxY = defineSwitch(board.GP15)
 
 switches = [SxA, SxB, SxX, SxY]
+switchLabels = ["a", "b", "x", "y"]
 
 # Make the display context
 splash = displayio.Group()
@@ -187,27 +204,14 @@ while True:
     
     for sx in switches:
         sx.update()
-    
-    if SxA.fell:
-        bootJson["bootSelect"] = (bootJson["bootSelect"] + 1) % len(bootJson["bootSet"])
-        text_area4.text = bootJson["bootSet"][bootJson["bootSelect"]]["label"]
-    else:
-        pass
-    
-    if SxB.fell:
-        print("B Pressed.")
-    else:
-        pass
-    
-    if SxX.fell:
-        print("X Pressed.")
-    else:
-        pass
-    
-    if SxY.fell:
-        print("Y Pressed.")
-    else:
-        pass
+        if sx.fell:
+            idx = switches.index(sx)
+            if switchLabels[idx] == "a":
+                bootJson["bootSelect"] = (bootJson["bootSelect"] + 1) % len(bootJson["bootSet"])
+                text_area4.text = bootJson["bootSet"][bootJson["bootSelect"]]["label"]
+
+            elif runState.isConnected and len(bootJson[switchLabels[idx]]) > 0:
+                runState.keyboard_layout.write(bootJson[switchLabels[idx]])
 
     if runState.isConnected():
         text_area1.text = "Host"
@@ -231,12 +235,12 @@ while True:
         if not ticks_less(ticks_ms(), runState.delay):
             # Step to the top of the GRUB menu in case there is a default OS
             for n in range(10):
-                keyPress(Keycode.UP_ARROW)
+                keyPress(runState, Keycode.UP_ARROW)
             
             # Step to the requested OS and boot
             for n in range(bootJson["bootSet"][bootJson["bootSelect"]]["item"]):
-                keyPress(Keycode.DOWN_ARROW)
-            keyPress(Keycode.ENTER)
+                keyPress(runState, Keycode.DOWN_ARROW)
+            keyPress(runState, Keycode.ENTER)
             
             # Wait for GRUB to release the USB
             while supervisor.runtime.usb_connected:
@@ -250,4 +254,3 @@ while True:
             
         else:
             pass
-            
