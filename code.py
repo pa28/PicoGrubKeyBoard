@@ -234,7 +234,7 @@ while True:
         text_area1.text = "GRUB"
         if not ticks_less(ticks_ms(), runState.delay):
             # Step to the top of the GRUB menu in case there is a default OS
-            for n in range(10):
+            for n in range(bootJson["bootMaxLines"]):
                 keyPress(runState, Keycode.UP_ARROW)
             
             # Step to the requested OS and boot
