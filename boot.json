@@ -1,8 +1,13 @@
 {
     "bootSet":
         [
-            {"item": 0, "label": "Ubuntu"},
-            {"item": 2, "label": "Windows"}
+            {"item": 0, "label": "Mate"},
+            {"item": 2, "label": "Win10"}
         ],
-    "bootSelect": 1
+    "bootSelect": 1,
+    "bootMaxLines": 5,
+    "grubDelay": 5000,
+    "x": "X button Pressed.\n",
+    "y": "Y button Pressed.\n",
+    "b": "B button pressed.\n"
 }
