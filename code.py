@@ -106,6 +106,8 @@ print("Hello Raspberry Pi Pico/CircuitPython ST7789 SPI IPS Display")
 print(adafruit_st7789.__name__ + " version: " + adafruit_st7789.__version__)
 print()
 
+time.sleep(2)
+
 runState = State()
 if supervisor.runtime.usb_connected:
     runState.setConnected()
