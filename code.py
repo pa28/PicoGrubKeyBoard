@@ -212,7 +212,7 @@ while True:
                 bootJson["bootSelect"] = (bootJson["bootSelect"] + 1) % len(bootJson["bootSet"])
                 text_area4.text = bootJson["bootSet"][bootJson["bootSelect"]]["label"]
 
-            elif runState.isConnected and len(bootJson[switchLabels[idx]]) > 0:
+            elif runState.isConnected() and len(bootJson[switchLabels[idx]]) > 0:
                 runState.keyboard_layout.write(bootJson[switchLabels[idx]])
 
     if runState.isConnected():
