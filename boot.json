@@ -4,5 +4,10 @@
             {"item": 0, "label": "Ubuntu"},
             {"item": 2, "label": "Windows"}
         ],
-    "bootSelect": 1
+    "bootSelect": 1,
+    "bootMaxLines": 5,
+    "grubDelay": 10000,
+    "x": "x\n",
+    "y": "y\n",
+    "b": "b\n"
 }
