@@ -41,11 +41,10 @@ rgbled.color = (0, 0, 0)
 
 
 def progressMark(color):
-    for n in range(3):
-        rgbled.color = color
-        time.sleep(0.1)
-        rgbled.color = (0, 0, 0)
-        time.sleep(0.1)
+    rgbled.color = color
+    time.sleep(0.1)
+    rgbled.color = (0, 0, 0)
+    time.sleep(0.1)
 
 
 def keyPress(state, keyCode):
@@ -110,18 +109,33 @@ print("Hello Raspberry Pi Pico/CircuitPython ST7789 SPI IPS Display")
 print(adafruit_st7789.__name__ + " version: " + adafruit_st7789.__version__)
 print()
 
-time.sleep(2)
-
-runState = State()
-if supervisor.runtime.usb_connected:
-    runState.setConnected()
-else:
-    runState.setNoHost()
+#time.sleep(2)
 
 # Read the boot configuration data
 bootStrm = open("/boot.json")
 bootJson = json.load(bootStrm)
 bootStrm.close()
+
+runState = State()
+
+SxA = defineSwitch(board.GP12)
+SxB = defineSwitch(board.GP13)
+SxX = defineSwitch(board.GP14)
+SxY = defineSwitch(board.GP15)
+
+switches = [SxA, SxB, SxX, SxY]
+switchLabels = ["a", "b", "x", "y"]
+
+# Bypass GRUB if switch X is held at start.
+SxX.update()
+
+if SxX.value:
+    runState.setNoHost()
+    if bootJson["powered"]:
+        if supervisor.runtime.usb_connected:
+            runState.setConnected()
+else:
+    runState.setConnected()
 
 print("Boot items: ", len(bootJson["bootSet"]))
 
@@ -149,14 +163,6 @@ display = adafruit_st7789.ST7789(display_bus,
                                  width=135, height=240,
                                  rowstart=40, colstart=53)
 display.rotation = 0
-
-SxA = defineSwitch(board.GP12)
-SxB = defineSwitch(board.GP13)
-SxX = defineSwitch(board.GP14)
-SxY = defineSwitch(board.GP15)
-
-switches = [SxA, SxB, SxX, SxY]
-switchLabels = ["a", "b", "x", "y"]
 
 # Make the display context
 splash = displayio.Group()
@@ -208,21 +214,21 @@ splash.append(text_group4)
 while True:
     time.sleep(.01)
 
-    for sx in switches:
-        sx.update()
-        if sx.fell:
-            idx = switches.index(sx)
-            if switchLabels[idx] == "a":
-                bootJson["bootSelect"] = (bootJson["bootSelect"] + 1) % len(bootJson["bootSet"])
-                text_area4.text = bootJson["bootSet"][bootJson["bootSelect"]]["label"]
-                bootStrm = open("/boot.json", mode="w")
-                json.dump(bootJson, bootStrm)
-                bootStrm.close()
-
-            elif runState.isConnected() and len(bootJson[switchLabels[idx]]) > 0:
-                runState.keyboard_layout.write(bootJson[switchLabels[idx]])
-
     if runState.isConnected():
+        for sx in switches:
+            sx.update()
+            if sx.fell:
+                idx = switches.index(sx)
+                if switchLabels[idx] == "a":
+                    bootJson["bootSelect"] = (bootJson["bootSelect"] + 1) % len(bootJson["bootSet"])
+                    text_area4.text = bootJson["bootSet"][bootJson["bootSelect"]]["label"]
+                    bootStrm = open("/boot.json", mode="w")
+                    json.dump(bootJson, bootStrm)
+                    bootStrm.close()
+
+                elif runState.isConnected() and len(bootJson[switchLabels[idx]]) > 0:
+                    runState.keyboard_layout.write(bootJson[switchLabels[idx]])
+
         text_area1.text = "Host"
         rgbled.color = (0, 16, 0)
         if not supervisor.runtime.usb_connected:
@@ -241,25 +247,35 @@ while True:
     elif runState.isGrub():
         rgbled.color = (0, 0, 16)
         text_area1.text = "GRUB"
-        if not ticks_less(ticks_ms(), runState.delay):
-            # Step to the top of the GRUB menu in case there is a default OS
-            for n in range(bootJson["bootMaxLines"]):
-                keyPress(runState, Keycode.UP_ARROW)
 
-            # Step to the requested OS and boot
-            for n in range(bootJson["bootSet"][bootJson["bootSelect"]]["item"]):
-                keyPress(runState, Keycode.DOWN_ARROW)
-            keyPress(runState, Keycode.ENTER)
-
-            # Wait for GRUB to release the USB
-            while supervisor.runtime.usb_connected:
-                time.sleep(0.1)
-
-            # Wait for selected OS to boot
-            while not supervisor.runtime.usb_connected:
-                time.sleep(0.1)
-
+        SxX.update()
+        if SxX.fell:
             runState.setConnected()
-
         else:
-            pass
+            if not ticks_less(ticks_ms(), runState.delay):
+                # Step to the top of the GRUB menu in case there is a default OS
+                for n in range(bootJson["bootMaxLines"]):
+                    keyPress(runState, Keycode.UP_ARROW)
+
+                # Step to the requested OS and boot
+                for n in range(bootJson["bootSet"][bootJson["bootSelect"]]["item"]):
+                    keyPress(runState, Keycode.DOWN_ARROW)
+                keyPress(runState, Keycode.ENTER)
+
+                # Wait for GRUB to release the USB
+                while supervisor.runtime.usb_connected:
+                    SxX.update()
+                    if SxX.fell:
+                        runState.setConnected()
+                        break
+                    progressMark((0, 0, 16))
+
+                # Wait for selected OS to boot
+                if not SxX.fell:
+                    while not supervisor.runtime.usb_connected:
+                        progressMark((0, 16, 16))
+
+                runState.setConnected()
+
+            else:
+                pass
