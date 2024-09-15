@@ -13,11 +13,12 @@ Logi Mx Keys Bluetooth connected keyboard which is not active at that point in t
     * A is used to select the OS to boot.
     * B, X and Y can be programed with "hardcoded" text in boot.json
   * One RGB LED
-    * Flashing Blue: Waiting for grub.
-    * Solid Blue: GRUB connected. Wait period before sending keybord codes to boot the sekected OS.
-    * Flashing Yellow: waiting booted host OS to connect.
-    * Solid Green: Connected to the host OS.
     * Solid Read: Not connected to the machne. No USB keyboard service active.
+    * Solid Blue: GRUB connected. Wait period before sending keybord codes to boot the sekected OS.
+    * Flashing Blue: Boot key sequence sent, waiting for GRUB to disconnect.
+    * Flashing Green: GRUB disconnected, waiting booted host OS to connect.
+    * Solid Green: Connected to the host OS.
+    * Flashing Yellow: Error.
 
 ### Persistence
 
