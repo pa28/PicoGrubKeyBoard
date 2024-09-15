@@ -8,7 +8,7 @@ Logi Mx Keys Bluetooth connected keyboard which is not active at that point in t
 ### Persistence
 
 This version supports persistence of the selected boot image. This requires installing the included
-```boot.py``` file which prevents makes the storage __READ ONLY__ via the USB interface. This can be
+```boot.py``` file which makes the storage __READ ONLY__ via the USB interface. This can be
 disabled using a _REPL_ connection such as that provided by the [Mu editor](https://codewith.mu/) and
 entering the following commands:
 ```python
