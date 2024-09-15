@@ -5,6 +5,20 @@ A small Python script for Raspberry Pi Pico using CircuitPython and the ```adafr
 to provide keyboard input to the Linux GRUB bootloader. This is useful in my case because I'm using
 Logi Mx Keys Bluetooth connected keyboard which is not active at that point in the boot sequence.
 
+### Hardware
+* Pi Pico
+* Pimoroni picodisplay
+  * A small display board that mounts to a Pi Pico
+  * Four buttons: A, B, X, Y
+    * A is used to select the OS to boot.
+    * B, X and Y can be programed with "hardcoded" text in boot.json
+  * One RGB LED
+    * Flashing Blue: Waiting for grub.
+    * Solid Blue: GRUB connected. Wait period before sending keybord codes to boot the sekected OS.
+    * Flashing Yellow: waiting booted host OS to connect.
+    * Solid Green: Connected to the host OS.
+    * Solid Read: Not connected to the machne. No USB keyboard service active.
+
 ### Persistence
 
 This version supports persistence of the selected boot image. This requires installing the included
