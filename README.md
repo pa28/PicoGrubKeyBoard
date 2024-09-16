@@ -1,5 +1,6 @@
 # PicoGrubKeyBoard
-Pi Pico - CircuitPython Program to act as Keyboard for GRUB boot
+Pi Pico - CircuitPython Program to act as Keyboard for GRUB boot. [Adapted from Hello Raspberry Pi]
+(http://helloraspberrypi.blogspot.com/2021/01/raspberry-pi-picocircuitpython-st7789.html
 
 A small Python script for Raspberry Pi Pico using CircuitPython and the ```adafruit_hid``` library
 to provide keyboard input to the Linux GRUB bootloader. This is useful in my case because I'm using
