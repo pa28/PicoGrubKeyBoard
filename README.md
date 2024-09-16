@@ -12,6 +12,7 @@ Logi Mx Keys Bluetooth connected keyboard which is not active at that point in t
   * Four buttons: A, B, X, Y
     * A is used to select the OS to boot.
     * B, X and Y can be programed with "hardcoded" text in boot.json
+    * Pressing the X button while the Pico is in GRUB mode will switch it to host mode. 
   * One RGB LED
     * Solid Read: Not connected to the machne. No USB keyboard service active.
     * Solid Blue: GRUB connected. Wait period before sending keybord codes to boot the sekected OS.
