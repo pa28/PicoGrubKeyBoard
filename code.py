@@ -213,10 +213,24 @@ splash.append(text_group2)
 splash.append(text_group3)
 splash.append(text_group4)
 
+mouseCount = 0
+mouseState = False
+mouseActive = False
+
 while True:
     time.sleep(.01)
 
     if runState.isConnected():
+        mouseCount = mouseCount + 1
+        if mouseCount >= 50:
+            mouseCount = 0
+            if mouseActive:
+                if mouseState:
+                    runState.mouse.move(x=-10)
+                    mouseState = False
+                else:
+                    runState.mouse.move(x=10)
+                    mouseState = True
         for sx in switches:
             sx.update()
             if sx.fell:
@@ -228,10 +242,19 @@ while True:
                     json.dump(bootJson, bootStrm)
                     bootStrm.close()
 
+                elif switchLabels[idx] == "b":
+                    if mouseActive:
+                        mouseActive = False
+                    else:
+                        mouseActive = True
                 elif runState.isConnected() and len(bootJson[switchLabels[idx]]) > 0:
                     runState.keyboard_layout.write(bootJson[switchLabels[idx]])
 
-        text_area1.text = "Host"
+        if mouseActive:
+            text_area1.text = "Mouse"
+        else:
+            text_area1.text = "Host"
+
         rgbled.color = (0, 16, 0)
         if not supervisor.runtime.usb_connected:
             runState.setNoHost()
