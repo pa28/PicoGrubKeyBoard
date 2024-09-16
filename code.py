@@ -185,10 +185,11 @@ inner_sprite = displayio.TileGrid(inner_bitmap,
 splash.append(inner_sprite)
 
 # Draw a label
-text_group1 = displayio.Group(scale=1, x=20, y=40)
+text_group1 = displayio.Group(scale=2, x=20, y=40)
 text1 = "Grub Boot"
 text_area1 = label.Label(terminalio.FONT, text=text1, color=0x00FF00)
 text_group1.append(text_area1)  # Subgroup for text scaling
+
 # Draw a label
 text_group2 = displayio.Group(scale=1, x=20, y=60)
 text2 = "CircuitPython"
@@ -200,6 +201,7 @@ text_group3 = displayio.Group(scale=1, x=20, y=100)
 text3 = adafruit_st7789.__name__
 text_area3 = label.Label(terminalio.FONT, text=text3, color=0x0000000)
 text_group3.append(text_area3)  # Subgroup for text scaling
+
 # Draw a label
 text_group4 = displayio.Group(scale=4, x=10, y=160)
 text4 = bootJson["bootSet"][bootJson["bootSelect"]]["label"]
